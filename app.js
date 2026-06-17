@@ -871,7 +871,7 @@ function resetAppForm() {
   document.getElementById("method-opt-link").classList.add("method-option-active");
   document.getElementById("app-source-code").value = "";
   // 모달 제목 원복
-  document.querySelector("#add-app-modal h2").textContent = "새로운 앱 등록";
+  document.querySelector("#add-app-modal h2").textContent = "새로운 작품 등록";
   document.querySelector("#add-app-modal .modal-lead").textContent = "선생님과 학생들이 체험할 수 있도록 멋지게 소개해 주세요!";
   document.getElementById("submit-app-btn").querySelector(".btn-text").textContent = "등록하기";
 }
