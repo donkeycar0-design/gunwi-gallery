@@ -344,10 +344,13 @@ async function fetchApps(reset = true) {
 }
 
 const CATEGORY_PLACEHOLDER = {
-  education: { emoji: "📚", label: "교육자료", color: "#4f46e5" },
-  coding:    { emoji: "💻", label: "코딩",    color: "#0891b2" },
-  maker:     { emoji: "🛠️", label: "메이커",  color: "#d97706" },
-  etc:       { emoji: "✨", label: "기타",    color: "#7c3aed" },
+  education:  { emoji: "📚", label: "교육자료",  color: "#4f46e5" },
+  literature: { emoji: "📖", label: "문학작품",  color: "#be123c" },
+  art:        { emoji: "🎨", label: "예술작품",  color: "#db2777" },
+  science:    { emoji: "🔬", label: "과학자료",  color: "#059669" },
+  coding:     { emoji: "💻", label: "코딩",     color: "#0891b2" },
+  maker:      { emoji: "🛠️", label: "메이커",   color: "#d97706" },
+  etc:        { emoji: "✨", label: "기타",     color: "#7c3aed" },
 };
 
 function makeCoverHtml(app) {
@@ -1064,6 +1067,9 @@ function toggleAuthTabs(mode) {
 function getCategoryLabel(category) {
   const labels = {
     education: "📚 교육자료",
+    literature: "📖 문학작품",
+    art: "🎨 예술작품",
+    science: "🔬 과학자료",
     coding: "💻 코딩",
     maker: "🛠️ 메이커",
     etc: "✨ 기타"
