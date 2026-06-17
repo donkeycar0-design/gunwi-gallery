@@ -1302,6 +1302,62 @@ body {
   line-height: 1.75;
 }
 
+/* 작품 본문 텍스트 (문학작품) */
+.detail-body #detail-body-text {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.85;
+}
+
+/* 작품 이미지 갤러리 (예술작품) — 상세 화면 */
+.detail-gallery-wrap h3 { font-size: 0.92rem; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; }
+.detail-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 8px;
+}
+.detail-gallery-item {
+  display: block;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  aspect-ratio: 1 / 1;
+  background: var(--bg-base);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.detail-gallery-item:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.12); }
+.detail-gallery-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* 갤러리 업로드 미리보기 — 등록 폼 */
+.gallery-previews {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+.gallery-previews:empty { display: none; }
+.gallery-preview-cell {
+  position: relative;
+  width: 84px; height: 84px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+.gallery-preview-cell img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.gallery-preview-remove {
+  position: absolute; top: 3px; right: 3px;
+  width: 20px; height: 20px;
+  display: flex; align-items: center; justify-content: center;
+  border: none; border-radius: 50%;
+  background: rgba(0,0,0,0.6); color: #fff;
+  cursor: pointer; padding: 0;
+}
+.gallery-preview-remove:hover { background: rgba(220,38,38,0.9); }
+.gallery-preview-remove i { width: 13px; height: 13px; }
+
 .detail-actions { display: flex; gap: 12px; }
 .detail-actions .btn { flex: 1; }
 

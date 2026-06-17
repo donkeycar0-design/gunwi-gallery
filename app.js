@@ -38,6 +38,9 @@ let hasMore = true;
 // File Upload State
 let uploadedCoverFile = null;
 let uploadedHtmlFile = null;
+// 갤러리 이미지: {file:File|null, url:string|null, previewSrc:string} 배열
+let galleryItems = [];
+const MAX_GALLERY_IMAGES = 8;
 
 // Edit Mode State
 let editingAppId = null;
@@ -85,6 +88,7 @@ const elements = {
   appTitle: document.getElementById("app-title"),
   appCategory: document.getElementById("app-category"),
   appDescription: document.getElementById("app-description"),
+  appBodyText: document.getElementById("app-body-text"),
   appUrl: document.getElementById("app-url"),
   coverFile: document.getElementById("app-cover-file"),
   coverZone: document.getElementById("cover-zone"),
@@ -97,6 +101,9 @@ const elements = {
   htmlBadge: document.getElementById("html-badge"),
   htmlFilename: document.getElementById("html-filename"),
   removeHtmlBtn: document.getElementById("remove-html-btn"),
+  galleryFile: document.getElementById("app-gallery-file"),
+  galleryZone: document.getElementById("gallery-zone"),
+  galleryPreviews: document.getElementById("gallery-previews"),
   submitAppBtn: document.getElementById("submit-app-btn"),
   
   // Detail Modal
@@ -108,6 +115,10 @@ const elements = {
   detailViews: document.getElementById("detail-views"),
   detailCover: document.getElementById("detail-cover"),
   detailDescText: document.getElementById("detail-desc-text"),
+  detailBody: document.getElementById("detail-body"),
+  detailBodyText: document.getElementById("detail-body-text"),
+  detailGalleryWrap: document.getElementById("detail-gallery-wrap"),
+  detailGallery: document.getElementById("detail-gallery"),
   iframeRunner: document.getElementById("iframe-runner"),
   appIframe: document.getElementById("app-iframe"),
   iframeFullscreenBtn: document.getElementById("iframe-fullscreen-btn"),
@@ -440,6 +451,29 @@ async function openAppDetail(app) {
     elements.detailCover.parentElement.style.display = "none";
   }
   elements.detailDescText.textContent = formatDescription(app.description);
+
+  // 작품 본문 (문학작품 등)
+  if (app.body_text && app.body_text.trim()) {
+    elements.detailBodyText.textContent = app.body_text;
+    elements.detailBody.style.display = "block";
+  } else {
+    elements.detailBody.style.display = "none";
+  }
+
+  // 작품 이미지 갤러리 (예술작품 등)
+  const gallery = Array.isArray(app.gallery_images) ? app.gallery_images : [];
+  if (gallery.length > 0) {
+    elements.detailGallery.innerHTML = gallery.map((url, i) => `
+      <a href="${escapeHtml(url)}" target="_blank" rel="noopener" class="detail-gallery-item" title="크게 보기">
+        <img src="${escapeHtml(url)}" alt="작품 이미지 ${i + 1}" loading="lazy">
+      </a>
+    `).join("");
+    elements.detailGalleryWrap.style.display = "block";
+  } else {
+    elements.detailGallery.innerHTML = "";
+    elements.detailGalleryWrap.style.display = "none";
+  }
+
   elements.detailLikesBtnText.textContent = `좋아요 ${app.likes_count || 0}`;
   elements.likeAppBtn.classList.remove("liked");
 
@@ -730,6 +764,63 @@ elements.removeCoverBtn.addEventListener("click", (e) => {
   elements.coverPreviewContainer.style.display = "none";
 });
 
+// 1-2. 작품 이미지 갤러리 업로드 처리기 (여러 장)
+function addGalleryFiles(fileList) {
+  const files = Array.from(fileList);
+  for (const file of files) {
+    if (!file.type.startsWith("image/")) {
+      alert(`이미지 파일만 추가할 수 있습니다: ${file.name}`);
+      continue;
+    }
+    if (file.size > 3 * 1024 * 1024) {
+      alert(`갤러리 이미지는 장당 3MB 이하여야 합니다: ${file.name}`);
+      continue;
+    }
+    if (galleryItems.length >= MAX_GALLERY_IMAGES) {
+      alert(`갤러리 이미지는 최대 ${MAX_GALLERY_IMAGES}장까지 가능합니다.`);
+      break;
+    }
+    const item = { file, url: null, previewSrc: "" };
+    galleryItems.push(item);
+    const reader = new FileReader();
+    reader.onload = (e) => { item.previewSrc = e.target.result; renderGalleryPreviews(); };
+    reader.readAsDataURL(file);
+  }
+  renderGalleryPreviews();
+}
+
+function renderGalleryPreviews() {
+  elements.galleryPreviews.innerHTML = "";
+  galleryItems.forEach((item, idx) => {
+    const cell = document.createElement("div");
+    cell.className = "gallery-preview-cell";
+    cell.innerHTML = `
+      <img src="${item.previewSrc || item.url || ""}" alt="갤러리 이미지 ${idx + 1}">
+      <button type="button" class="gallery-preview-remove" title="이미지 제거"><i data-lucide="x"></i></button>
+    `;
+    cell.querySelector(".gallery-preview-remove").addEventListener("click", (e) => {
+      e.stopPropagation();
+      galleryItems.splice(idx, 1);
+      renderGalleryPreviews();
+    });
+    elements.galleryPreviews.appendChild(cell);
+  });
+  if (typeof lucide !== "undefined") lucide.createIcons();
+}
+
+elements.galleryZone.addEventListener("click", () => elements.galleryFile.click());
+elements.galleryZone.addEventListener("dragover", (e) => { e.preventDefault(); elements.galleryZone.classList.add("dragover"); });
+elements.galleryZone.addEventListener("dragleave", () => elements.galleryZone.classList.remove("dragover"));
+elements.galleryZone.addEventListener("drop", (e) => {
+  e.preventDefault();
+  elements.galleryZone.classList.remove("dragover");
+  if (e.dataTransfer.files && e.dataTransfer.files.length > 0) addGalleryFiles(e.dataTransfer.files);
+});
+elements.galleryFile.addEventListener("change", () => {
+  if (elements.galleryFile.files && elements.galleryFile.files.length > 0) addGalleryFiles(elements.galleryFile.files);
+  elements.galleryFile.value = "";
+});
+
 // 2. HTML 파일 업로드 처리기
 initDragAndDrop(elements.htmlZone, elements.htmlFile, (file) => {
   if (!file.name.endsWith(".html")) {
@@ -762,6 +853,7 @@ elements.addAppForm.addEventListener("submit", async (e) => {
   const title = elements.appTitle.value.trim();
   const category = elements.appCategory.value;
   const description = elements.appDescription.value.trim();
+  const bodyText = elements.appBodyText.value.trim();
   const appUrl = elements.appUrl.value.trim();
   const sourceCode = document.getElementById("app-source-code").value.trim();
 
@@ -793,6 +885,21 @@ elements.addAppForm.addEventListener("submit", async (e) => {
       coverImageUrl = supabaseClient.storage.from("app-gallery").getPublicUrl(coverPath).data.publicUrl;
     }
 
+    // A-2. 갤러리 이미지 업로드 (새 파일만 업로드, 기존 URL은 유지) — 순서 보존
+    const galleryUrls = [];
+    for (const item of galleryItems) {
+      if (item.url) {
+        galleryUrls.push(item.url);
+      } else if (item.file) {
+        const gExt  = item.file.name.split(".").pop();
+        const gPath = `gallery/${Date.now()}_${Math.random().toString(36).substr(2, 5)}.${gExt}`;
+        const { error: gErr } = await supabaseClient.storage
+          .from("app-gallery").upload(gPath, item.file);
+        if (gErr) throw new Error(`갤러리 이미지 업로드 실패: ${gErr.message}`);
+        galleryUrls.push(supabaseClient.storage.from("app-gallery").getPublicUrl(gPath).data.publicUrl);
+      }
+    }
+
     // B. 방법별 처리
     if (activeMethod === "html" && uploadedHtmlFile) {
       const htmlPath = `htmls/${Date.now()}_${uploadedHtmlFile.name}`;
@@ -811,6 +918,8 @@ elements.addAppForm.addEventListener("submit", async (e) => {
 
     const appData = {
       title, category, description,
+      body_text: bodyText || null,
+      gallery_images: galleryUrls,
       app_url: activeMethod === "link" ? (appUrl || null) : null,
       cover_image_url: coverImageUrl,
       html_file_path: htmlFileUrl,
@@ -858,6 +967,8 @@ function resetAppForm() {
   elements.addAppForm.reset();
   uploadedCoverFile = null;
   uploadedHtmlFile  = null;
+  galleryItems      = [];
+  renderGalleryPreviews();
   editingAppId       = null;
   editingAppOriginal = null;
   elements.coverPreview.src = "";
@@ -887,7 +998,13 @@ function openEditMode(app) {
   elements.appTitle.value       = app.title       || "";
   elements.appCategory.value    = app.category    || "education";
   elements.appDescription.value = app.description || "";
+  elements.appBodyText.value    = app.body_text   || "";
   elements.appUrl.value         = app.app_url     || "";
+
+  // 기존 갤러리 이미지 복원 (URL 항목으로)
+  const existingGallery = Array.isArray(app.gallery_images) ? app.gallery_images : [];
+  galleryItems = existingGallery.map(url => ({ file: null, url, previewSrc: url }));
+  renderGalleryPreviews();
 
   // 등록 방법 복원
   let method = "link";
