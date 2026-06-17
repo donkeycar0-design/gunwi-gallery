@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>군위몰입 수학·영어 — 앱 갤러리</title>
+
+  <!-- Google Fonts: Outfit & Noto Sans KR -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+  <!-- Tailwind/Vanilla CSS reset & Custom style linkage -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Lucide Icons (자체 호스팅, 버전 고정 1.20.0 — @latest 자동업글로 인한 깨짐 방지) -->
+  <script src="vendor/lucide.min.js"></script>
+</head>
+<body>
+
+  <!-- Background Glowing Orbs -->
+  <div class="glow-orb orb-1"></div>
+  <div class="glow-orb orb-2"></div>
+  <div class="glow-orb orb-3"></div>
+
+  <!-- Header Section -->
+  <header class="app-header">
+    <div class="header-container">
+      <a href="/" class="logo">
+        <div class="logo-mark">
+          <i data-lucide="palette" class="logo-mark-icon"></i>
+        </div>
+        <div class="logo-group">
+          <div class="logo-title-row">
+            <span class="logo-text">몰입갤러리</span>
+            <span class="logo-maker-badge">⚡ WORKS</span>
+          </div>
+          <span class="logo-tagline">선생님 학생이 함께만드는 창의적인 작품 갤러리</span>
+        </div>
+      </a>
+      <nav class="nav-menu">
+        <button id="add-app-btn" type="button" class="btn btn-primary btn-hidden">
+          <i data-lucide="plus"></i> <span>앱 등록하기</span>
+        </button>
+        <div id="auth-section">
+          <button id="login-nav-btn" type="button" class="btn btn-secondary">로그인</button>
+          <div id="user-profile" class="user-profile user-profile-hidden">
+            <span id="user-display-name" class="user-name">강사님</span>
+            <button id="my-activity-btn" type="button" class="btn btn-text" title="내 활동"><i data-lucide="layout-dashboard"></i></button>
+            <button id="logout-btn" type="button" class="btn btn-text" title="로그아웃"><i data-lucide="log-out"></i></button>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="main-content">
+
+    <!-- Filter & Search Controls -->
+    <section class="control-section">
+      <div class="search-bar-wrapper">
+        <i data-lucide="search" class="search-icon"></i>
+        <input type="text" id="search-input" placeholder="관심 있는 앱이나 제작자를 검색해보세요...">
+      </div>
+
+      <div class="filters-container">
+        <div class="filters-left">
+          <div class="category-tabs" id="category-tabs">
+            <button type="button" class="tab-btn active" data-category="all">전체</button>
+            <button type="button" class="tab-btn" data-category="education">📚 교육자료</button>
+            <button type="button" class="tab-btn" data-category="coding">💻 코딩</button>
+            <button type="button" class="tab-btn" data-category="maker">🛠️ 메이커</button>
+            <button type="button" class="tab-btn" data-category="etc">✨ 기타</button>
+          </div>
+          <!-- 작성자 구분 필터 -->
+          <div class="role-filter-bar">
+            <button type="button" class="role-filter-btn active" data-role="all">전체</button>
+            <button type="button" class="role-filter-btn" data-role="teacher">🎓 강사</button>
+            <button type="button" class="role-filter-btn" data-role="student">📚 학생</button>
+          </div>
+        </div>
+
+        <div class="filters-right">
+          <button type="button" id="board-btn" class="btn btn-board">
+            <i data-lucide="message-square"></i> 게시판
+          </button>
+          <div class="sort-wrapper">
+            <select id="sort-select" class="sort-select" title="정렬 기준 선택">
+              <option value="recent">최근 등록순</option>
+              <option value="popular">인기 조회순</option>
+              <option value="likes">좋아요 많은순</option>
+            </select>
+            <i data-lucide="chevron-down" class="select-chevron"></i>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Apps Grid Showcase -->
+    <section class="showcase-section">
+      <div id="apps-grid" class="apps-grid">
+        <!-- Apps cards will be rendered dynamically here -->
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <p>앱 갤러리를 불러오는 중입니다...</p>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div id="empty-state" class="empty-state empty-state-hidden">
+        <i data-lucide="folder-open" class="empty-icon"></i>
+        <h3>등록된 앱이 없습니다</h3>
+        <p>첫 번째 크리에이티브한 앱을 등록해 보세요!</p>
+      </div>
+
+      <!-- 무한 스크롤 감지 sentinel -->
+      <div id="scroll-sentinel"></div>
+      <div id="load-more-spinner" class="load-more-spinner spinner-hidden">
+        <div class="spinner"></div>
+        <p>불러오는 중...</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer Section -->
+  <footer class="app-footer">
+    <div class="footer-container">
+      <div class="footer-info">
+        <p class="footer-org">군위인재양성원 늘봄마을 몰입수학/영어</p>
+        <p class="footer-addr"><i data-lucide="map-pin"></i> 대구 군위군 군위읍 동서길 57 군위청소년허브센터 2-3층 (우)43114</p>
+        <p class="footer-copy">© 2026 군위몰입 수학·영어. All Rights Reserved. &nbsp;|&nbsp; app관리자 김병두</p>
+      </div>
+      <div class="footer-right">
+        <button type="button" id="qr-btn" class="footer-qr-btn">
+          <i data-lucide="qr-code"></i> 찾아오는 방법
+        </button>
+        <div class="db-status" id="db-status">
+          <span class="db-status-dot" id="db-status-dot"></span>
+          <span class="db-status-text" id="db-status-text">DB 확인 중...</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- QR Code Modal -->
+  <div id="qr-modal" class="modal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content qr-modal-content">
+      <button type="button" class="modal-close" title="닫기"><i data-lucide="x"></i></button>
+      <div class="qr-modal-body">
+        <h2 class="qr-modal-title"><i data-lucide="qr-code"></i> 앱 갤러리 바로가기</h2>
+        <p class="qr-modal-desc">QR코드를 스캔하면 앱 갤러리로 바로 이동합니다.</p>
+        <div class="qr-image-wrap">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=10&data=https://gunwi-notice-bot.vercel.app" alt="앱 갤러리 QR코드" class="qr-image" />
+        </div>
+        <p class="qr-modal-url">https://gunwi-notice-bot.vercel.app</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- 내 활동 Modal -->
+  <div id="activity-modal" class="modal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content activity-modal-content">
+      <button type="button" class="modal-close" title="닫기"><i data-lucide="x"></i></button>
+      <div class="activity-header">
+        <h2 class="board-title"><i data-lucide="layout-dashboard"></i> 내 활동</h2>
+      </div>
+      <div class="activity-tabs">
+        <button type="button" class="activity-tab active" data-tab="my-apps">📱 내가 등록한 앱</button>
+        <button type="button" class="activity-tab" data-tab="my-posts">📝 내가 쓴 게시글</button>
+      </div>
+      <div id="my-apps-view" class="activity-view">
+        <div id="my-apps-list" class="my-apps-grid"></div>
+        <p id="my-apps-empty" class="board-empty board-empty-hidden">등록한 앱이 없습니다.</p>
+      </div>
+      <div id="my-posts-view" class="activity-view activity-view-hidden">
+        <div id="my-posts-list" class="posts-list"></div>
+        <p id="my-posts-empty" class="board-empty board-empty-hidden">작성한 게시글이 없습니다.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 링크 복사 토스트 -->
+  <div id="copy-toast" class="copy-toast toast-hidden">🔗 링크가 클립보드에 복사되었습니다!</div>
+
+  <!-- 0. 게시판 Modal -->
+  <div id="board-modal" class="modal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content board-modal-content">
+      <button type="button" class="modal-close" title="닫기"><i data-lucide="x"></i></button>
+
+      <div class="board-header">
+        <div>
+          <h2 class="board-title"><i data-lucide="message-square"></i> 커뮤니티 게시판</h2>
+          <p class="board-subtitle">몰입 메이커스 선생님·학생 소통 공간</p>
+        </div>
+        <button type="button" id="write-post-btn" class="btn btn-primary write-btn-hidden">
+          <i data-lucide="pencil"></i> 글쓰기
+        </button>
+      </div>
+
+      <!-- 카테고리 탭 -->
+      <div class="board-cats" id="board-cats">
+        <button type="button" class="board-cat active" data-cat="all">전체</button>
+        <button type="button" class="board-cat" data-cat="notice">📢 전달사항</button>
+        <button type="button" class="board-cat" data-cat="suggest">💡 건의사항</button>
+        <button type="button" class="board-cat" data-cat="request">🛠️ 제작요청</button>
+        <button type="button" class="board-cat" data-cat="praise">👏 칭찬해요</button>
+        <button type="button" class="board-cat" data-cat="complaint">😤 불편사항</button>
+        <button type="button" class="board-cat" data-cat="etc">💬 기타</button>
+      </div>
+
+      <!-- 뷰 1: 목록 -->
+      <div id="board-list-view" class="board-view">
+        <div id="posts-list" class="posts-list"></div>
+        <p id="board-empty" class="board-empty board-empty-hidden">등록된 게시글이 없습니다.</p>
+        <div class="board-load-more-wrap">
+          <button type="button" id="board-load-more" class="btn-load-more" style="display:none;">
+            게시글 더 보기
+          </button>
+        </div>
+      </div>
+
+      <!-- 뷰 2: 상세 -->
+      <div id="board-detail-view" class="board-view board-view-hidden">
+        <button type="button" id="back-to-list" class="btn-back">
+          <i data-lucide="arrow-left"></i> 목록으로
+        </button>
+        <div id="post-detail"></div>
+      </div>
+
+      <!-- 뷰 3: 글쓰기 -->
+      <div id="board-write-view" class="board-view board-view-hidden">
+        <button type="button" id="back-from-write" class="btn-back">
+          <i data-lucide="arrow-left"></i> 취소
+        </button>
+        <form id="post-form" class="post-form">
+          <div class="form-group">
+            <label for="post-category">카테고리 <span class="required">*</span></label>
+            <div class="select-wrapper">
+              <select id="post-category" required title="카테고리 선택">
+                <option value="notice">📢 전달사항</option>
+                <option value="suggest">💡 건의사항</option>
+                <option value="request">🛠️ 제작요청</option>
+                <option value="praise">👏 칭찬해요</option>
+                <option value="complaint">😤 불편사항</option>
+                <option value="etc">💬 기타</option>
+              </select>
+              <i data-lucide="chevron-down"></i>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="post-title">제목 <span class="required">*</span></label>
+            <input type="text" id="post-title" required placeholder="제목을 입력하세요">
+          </div>
+          <div class="form-group">
+            <label for="post-content">내용 <span class="required">*</span></label>
+            <textarea id="post-content" required rows="8" placeholder="내용을 입력하세요&#10;(줄바꿈: Enter 키 사용)"></textarea>
+          </div>
+          <div class="form-actions">
+            <button type="button" id="cancel-post-btn" class="btn btn-secondary">취소</button>
+            <button type="submit" id="submit-post-btn" class="btn btn-primary">
+              <span class="btn-text">등록하기</span>
+              <span class="btn-spinner"></span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 1. Authentication Modal -->
+  <div id="auth-modal" class="modal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content auth-modal-content">
+      <button type="button" class="modal-close" title="닫기"><i data-lucide="x"></i></button>
+
+      <div class="auth-box">
+        <div class="auth-tabs">
+          <button id="tab-login" type="button" class="auth-tab-btn active">로그인</button>
+          <button id="tab-signup" type="button" class="auth-tab-btn">회원가입</button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="login-form" class="auth-form">
+          <div class="form-group">
+            <label for="login-email">이메일 주소</label>
+            <input type="email" id="login-email" required placeholder="example@email.com">
+          </div>
+          <div class="form-group">
+            <label for="login-password">비밀번호</label>
+            <input type="password" id="login-password" required minlength="6" placeholder="비밀번호 입력">
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">
+            <span class="btn-text">로그인</span>
+            <span class="btn-spinner"></span>
+          </button>
+        </form>
+
+        <!-- Signup Form -->
+        <form id="signup-form" class="auth-form signup-form-hidden">
+          <div class="form-group">
+            <label>구분 선택 <span class="required">*</span></label>
+            <div class="role-selector">
+              <label class="role-option">
+                <input type="radio" name="signup-role" value="teacher" required>
+                <span class="role-label">🎓 강사</span>
+              </label>
+              <label class="role-option">
+                <input type="radio" name="signup-role" value="student" required>
+                <span class="role-label">📚 학생</span>
+              </label>
+            </div>
+            <div id="teacher-name-notice" class="teacher-notice notice-hidden">
+              <i data-lucide="info" class="notice-icon"></i>
+              강사는 꼭 <strong>실명</strong>으로 가입을 부탁 드립니다.
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="signup-username">닉네임 / 성함</label>
+            <input type="text" id="signup-username" required placeholder="예: 배수인, 홍길동">
+          </div>
+          <div class="form-group">
+            <label for="signup-email">이메일 주소</label>
+            <input type="email" id="signup-email" required placeholder="example@email.com">
+          </div>
+          <div class="form-group">
+            <label for="signup-password">비밀번호 (6자 이상)</label>
+            <input type="password" id="signup-password" required minlength="6" placeholder="비밀번호 입력">
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">
+            <span class="btn-text">회원가입 신청</span>
+            <span class="btn-spinner"></span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Add App Modal -->
+  <div id="add-app-modal" class="modal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content form-modal-content">
+      <button type="button" class="modal-close" title="닫기"><i data-lucide="x"></i></button>
+      <h2>새로운 앱 등록</h2>
+      <p class="modal-lead">선생님과 학생들이 체험할 수 있도록 멋지게 소개해 주세요!</p>
+
+      <form id="add-app-form">
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="app-title">앱 제목 <span class="required">*</span></label>
+            <input type="text" id="app-title" required placeholder="예: 초등 2학년 분수 모의 교구">
+          </div>
+          <div class="form-group">
+            <label for="app-category">카테고리 <span class="required">*</span></label>
+            <div class="select-wrapper">
+              <select id="app-category" required title="카테고리 선택">
+                <option value="education">📚 교육자료</option>
+                <option value="coding">💻 코딩</option>
+                <option value="maker">🛠️ 메이커</option>
+                <option value="etc">✨ 기타</option>
+              </select>
+              <i data-lucide="chevron-down"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="app-description">앱 사용 설명서 및 소개 <span class="required">*</span></label>
+          <textarea id="app-description" required rows="5" placeholder="앱의 목적, 조작 방법, 주요 타겟 학년 등을 자유롭게 적어주세요.&#10;(줄바꿈: Enter 키 사용)"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>표지 이미지 (Cover Image)</label>
+          <div class="file-upload-zone" id="cover-zone">
+            <i data-lucide="image" class="upload-icon"></i>
+            <span class="upload-text">마우스로 클릭하거나 이미지를 드래그 앤 드롭 하세요</span>
+            <span class="upload-info">PNG, JPG, WEBP (최대 3MB)</span>
+            <input type="file" id="app-cover-file" accept="image/*" class="file-input-hidden" title="표지 이미지 선택">
+            <div class="preview-container preview-hidden" id="cover-preview-container">
+              <img id="cover-preview" src="" alt="Cover Preview">
+              <button type="button" id="remove-cover-btn" class="btn-remove" title="표지 이미지 제거"><i data-lucide="trash-2"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-divider">실행 방법 선택</div>
+
+        <div class="form-group">
+          <div class="method-selector">
+            <label class="method-option" id="method-opt-link">
+              <input type="radio" name="app-method" value="link" checked>
+              <span>🔗 링크</span>
+            </label>
+            <label class="method-option" id="method-opt-html">
+              <input type="radio" name="app-method" value="html">
+              <span>📄 HTML 파일</span>
+            </label>
+            <label class="method-option" id="method-opt-code">
+              <input type="radio" name="app-method" value="code">
+              <span>💻 소스코드</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- 방법 1: 링크 -->
+        <div id="method-link-section" class="method-section">
+          <div class="form-group">
+            <label for="app-url">외부 실행 URL (웹사이트 주소)</label>
+            <input type="url" id="app-url" placeholder="https://example.com 형식으로 입력">
+          </div>
+        </div>
+
+        <!-- 방법 2: HTML 파일 -->
+        <div id="method-html-section" class="method-section method-hidden">
+          <div class="form-group">
+            <label>단일 HTML 파일 업로드</label>
+            <div class="file-upload-zone" id="html-zone">
+              <i data-lucide="file-code" class="upload-icon"></i>
+              <span class="upload-text" id="html-upload-text">마우스로 클릭하거나 .html 파일을 드래그 하세요</span>
+              <span class="upload-info">단일 .html 파일만 지원 (최대 5MB)</span>
+              <input type="file" id="app-html-file" accept=".html" class="file-input-hidden" title="HTML 파일 선택">
+              <div class="file-selected-badge file-badge-hidden" id="html-badge">
+                <i data-lucide="file-check"></i>
+                <span id="html-filename">filename.html</span>
+                <button type="button" id="remove-html-btn" class="btn-remove" title="HTML 파일 제거"><i data-lucide="x"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 방법 3: 소스코드 -->
+        <div id="method-code-section" class="method-section method-hidden">
+          <div class="form-group">
+            <label for="app-source-code">HTML 소스코드 붙여넣기</label>
+            <textarea id="app-source-code" rows="12" class="source-code-textarea" placeholder="&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;...&#10;&#10;AI가 만들어준 HTML 코드를 그대로 붙여넣으세요."></textarea>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary modal-close-btn">취소</button>
+          <button type="submit" id="submit-app-btn" class="btn btn-primary">
+            <span class="btn-text">등록하기</span>
+            <span class="btn-spinner"></span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 3. App Detail Modal -->
+  <div id="detail-modal" class="modal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content detail-modal-content">
+      <button type="button" class="modal-close" title="닫기"><i data-lucide="x"></i></button>
+
+      <div class="detail-container">
+        <!-- Left Column: Visuals & Description -->
+        <div class="detail-main">
+          <div class="detail-header-block">
+            <div class="detail-header-top">
+              <span id="detail-category" class="category-badge">교육자료</span>
+              <div class="detail-header-actions">
+                <button type="button" id="share-app-btn" class="btn btn-secondary btn-sm" title="링크 복사">
+                  <i data-lucide="share-2"></i> 공유
+                </button>
+                <div class="detail-author-btns">
+                  <button type="button" id="download-source-btn" class="btn btn-secondary btn-sm edit-btn-hidden" title="소스코드 다운로드">
+                    <i data-lucide="download"></i> 소스코드
+                  </button>
+                  <button type="button" id="edit-app-btn" class="btn btn-secondary btn-sm edit-btn-hidden" title="앱 수정">
+                    <i data-lucide="pencil"></i> 수정
+                  </button>
+                  <button type="button" id="delete-app-btn" class="btn btn-danger btn-sm edit-btn-hidden" title="앱 삭제">
+                    <i data-lucide="trash-2"></i> 삭제
+                  </button>
+                </div>
+              </div>
+            </div>
+            <h2 id="detail-title" class="detail-title">앱 제목</h2>
+            <div class="detail-meta">
+              <span class="meta-item"><i data-lucide="user"></i> <span id="detail-author">작성자</span></span>
+              <span class="meta-item"><i data-lucide="calendar"></i> <span id="detail-date">2026-05-31</span></span>
+              <span class="meta-item"><i data-lucide="eye"></i> <span id="detail-views">0</span></span>
+            </div>
+          </div>
+
+          <div class="detail-visual">
+            <img id="detail-cover" src="" alt="App Cover">
+          </div>
+
+          <div class="detail-description">
+            <h3>📖 앱 사용법 & 소개</h3>
+            <p id="detail-desc-text">상세 정보 설명글이 들어갑니다.</p>
+          </div>
+
+          <!-- App Runner Container (Iframe) -->
+          <div id="iframe-runner" class="iframe-runner iframe-runner-hidden">
+            <div class="iframe-header">
+              <span><i data-lucide="play-circle"></i> 실시간 앱 실행 화면</span>
+              <button type="button" id="iframe-fullscreen-btn" class="btn btn-text" title="전체화면"><i data-lucide="maximize-2"></i></button>
+            </div>
+            <div class="iframe-wrapper">
+              <iframe id="app-iframe" src="" sandbox="allow-scripts allow-same-origin" title="앱 실행 화면"></iframe>
+            </div>
+          </div>
+
+          <div class="detail-actions">
+            <button type="button" id="launch-app-btn" class="btn btn-launch btn-lg">
+              <i data-lucide="rocket"></i> <span>새 창에서 앱 실행하기</span>
+            </button>
+            <button type="button" id="like-app-btn" class="btn btn-secondary btn-lg">
+              <i data-lucide="thumbs-up"></i> <span id="detail-likes-btn-text">좋아요 0</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Right Column: Comments & Community -->
+        <div class="detail-sidebar">
+          <h3>💬 댓글과 피드백</h3>
+
+          <div id="comments-list" class="comments-list">
+            <!-- Comments will be rendered dynamically here -->
+          </div>
+
+          <div class="comment-input-area">
+            <div id="comment-anonymous-warning" class="comment-warning">
+              댓글을 작성하려면 <button type="button" id="comment-login-link" class="btn-link">로그인</button>이 필요합니다.
+            </div>
+            <form id="comment-form" class="comment-form-hidden">
+              <textarea id="comment-text" required placeholder="이 앱에 대한 의견이나 피드백을 남겨보세요..." rows="3"></textarea>
+              <button type="submit" class="btn btn-primary btn-sm">댓글 등록</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Supabase Client JS CDN (v2) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Web App Logic -->
+  <script src="app.js"></script>
+
+</body>
+</html>
