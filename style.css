@@ -1492,18 +1492,18 @@ select option { background: #fff; color: var(--text-primary); }
   /* 앱 등록하기 버튼 — 모바일에서 아이콘 크기에 맞춤 */
   .nav-menu .btn-primary { padding: 8px 10px; font-size: 0.85rem; }
 
-  /* 필터 영역 세로 스택 — 왼쪽 정렬 */
-  .filters-container { flex-direction: column; align-items: flex-start; gap: 8px; }
-  .filters-left  { flex-direction: column; align-items: flex-start; gap: 8px; }
-  .filters-right { flex-direction: column; align-items: flex-start; gap: 8px; }
+  /* 필터 영역 세로 스택 — 화면 너비에 가둠(가로 밀림 방지) */
+  .filters-container { flex-direction: column; align-items: stretch; gap: 8px; width: 100%; max-width: 100%; }
+  .filters-left  { flex-direction: column; align-items: stretch; gap: 8px; width: 100%; max-width: 100%; }
+  .filters-right { flex-direction: column; align-items: flex-start; gap: 8px; width: 100%; max-width: 100%; }
   .btn-board { text-align: left; }
 
-  /* 카테고리 탭 가로 스크롤 — 왼쪽 정렬 */
-  .category-tabs { overflow-x: auto; white-space: nowrap; padding: 3px; }
+  /* 카테고리 탭: 한 줄로 뻗지 않고 줄바꿈 → 화면 밖으로 안 나감 */
+  .category-tabs { flex-wrap: wrap; width: 100%; max-width: 100%; padding: 4px; }
   .tab-btn { padding: 6px 12px; font-size: 0.8rem; }
 
-  /* 역할 필터 왼쪽 정렬 */
-  .role-filter-bar { justify-content: flex-start; }
+  /* 역할 필터 왼쪽 정렬 + 줄바꿈 */
+  .role-filter-bar { justify-content: flex-start; flex-wrap: wrap; }
 
   /* 정렬 셀렉트 — 왼쪽 정렬, 너비 자동 */
   .sort-wrapper { width: auto; }

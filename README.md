@@ -9,7 +9,8 @@
 - Vercel 정적 호스팅
 - Lucide 아이콘 (자체 호스팅, vendor/lucide.min.js)
 
-## 관련 테이블 (Supabase)
+## 관련 테이블 
+(Supabase)
 
 | 테이블 | 용도 |
 |---|---|
