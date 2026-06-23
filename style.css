@@ -1596,6 +1596,12 @@ select option { background: #fff; color: var(--text-primary); }
   flex-wrap: wrap;
 }
 .header-left .btn-board { align-self: center; }
+/* 게시판·로그인 살짝 아래로 */
+.header-left .btn-board,
+.app-header .nav-menu { margin-top: 16px; }
+
+/* 검색창 위 여백 축소 */
+.control-section { padding-top: 6px; }
 .logo {
   position: relative;
   background: #fdf3a8;
