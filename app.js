@@ -1310,12 +1310,12 @@ async function fetchGuestbook() {
   if (typeof lucide !== "undefined") lucide.createIcons();
 }
 
-// 본인 또는 관리자만 삭제 가능 / 수정은 본인만
+// 본인 또는 관리자는 수정·삭제 모두 가능
 function gbCanDelete(post) {
   return currentUser && (currentUser.id === post.author_id || (currentProfile && currentProfile.is_admin));
 }
 function gbCanEdit(post) {
-  return currentUser && currentUser.id === post.author_id;
+  return currentUser && (currentUser.id === post.author_id || (currentProfile && currentProfile.is_admin));
 }
 
 function gbRow(post) {
