@@ -1775,9 +1775,8 @@ select option { background: #fff; color: var(--text-primary); }
   max-width: 1080px;
   margin: 0 auto;
   padding: 24px 28px 32px;
-  background: #f5efdd;
-  border-radius: 16px;
-  box-shadow: 2px 5px 18px rgba(0,0,0,0.12);
+  background: transparent;   /* 페이지 배경과 동일 — 경계 없음 */
+  box-shadow: none;
 }
 /* 뒤로가기 버튼 */
 .gb-back {
