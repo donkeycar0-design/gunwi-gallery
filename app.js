@@ -1401,12 +1401,23 @@ document.getElementById("gb-form").addEventListener("submit", async (e) => {
   titleEl.focus();
 });
 
-// 방명록 열기
-document.getElementById("board-btn").addEventListener("click", () => {
+// 방명록 화면 전환 (모달 X — 갤러리 숨기고 방명록 표시)
+function showGuestbook() {
+  document.querySelector(".control-section").style.display = "none";
+  document.querySelector(".showcase-section").style.display = "none";
+  document.getElementById("guestbook-view").style.display = "block";
   gbUpdateAuth();
   fetchGuestbook();
-  openModal(document.getElementById("board-modal"));
-});
+  window.scrollTo(0, 0);
+  if (typeof lucide !== "undefined") lucide.createIcons();
+}
+function hideGuestbook() {
+  document.getElementById("guestbook-view").style.display = "none";
+  document.querySelector(".control-section").style.display = "";
+  document.querySelector(".showcase-section").style.display = "";
+}
+document.getElementById("board-btn").addEventListener("click", showGuestbook);
+document.getElementById("gb-back").addEventListener("click", hideGuestbook);
 
 /* ==========================================================================
    공유 링크
