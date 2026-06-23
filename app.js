@@ -1268,294 +1268,144 @@ function showSystemNotice(msg) {
 }
 
 /* ==========================================================================
-   게시판 (Community Board)
+   방명록 (Guestbook — 포스트잇)
+   posts 테이블 재사용: title, content(본문), author_*, created_at, category 고정 'etc'
    ========================================================================== */
 
-let boardCat = "all";
-let selectedPost = null;
-const BOARD_PAGE_SIZE = 20;
-let boardPage = 0;
-let boardHasMore = true;
-let boardLoadingMore = false;
+const GB_LIMIT = 100;
 
-const POST_CAT_LABELS = {
-  notice: "📢 전달사항", suggest: "💡 건의사항", request: "🛠️ 제작요청",
-  praise: "👏 칭찬해요", complaint: "😤 불편사항", etc: "💬 기타"
-};
-const POST_CAT_CLASS = {
-  notice: "cat-notice", suggest: "cat-suggest", request: "cat-request",
-  praise: "cat-praise", complaint: "cat-complaint", etc: "cat-etc"
-};
-
-function showBoardView(view) {
-  ["board-list-view","board-detail-view","board-write-view"].forEach(id => {
-    document.getElementById(id).classList.add("board-view-hidden");
-  });
-  document.getElementById(view).classList.remove("board-view-hidden");
+// 로그인 여부에 따라 작성 폼 상태 갱신
+function gbUpdateAuth() {
+  const loggedIn = !!currentUser;
+  document.getElementById("gb-login-hint").style.display = loggedIn ? "none" : "block";
+  document.getElementById("gb-title").disabled  = !loggedIn;
+  document.getElementById("gb-body").disabled   = !loggedIn;
+  document.getElementById("gb-submit").disabled = !loggedIn;
+  document.getElementById("gb-form").classList.toggle("gb-form-locked", !loggedIn);
 }
 
-async function fetchPosts(reset = true) {
-  if (!reset && (boardLoadingMore || !boardHasMore)) return;
-
-  const listEl  = document.getElementById("posts-list");
-  const emptyEl = document.getElementById("board-empty");
-  const moreBtn = document.getElementById("board-load-more");
-
-  if (reset) {
-    boardPage = 0;
-    boardHasMore = true;
-    listEl.innerHTML = `<p style="color:var(--text-muted);padding:32px 0;text-align:center">불러오는 중...</p>`;
-    emptyEl.classList.add("board-empty-hidden");
-  } else {
-    boardLoadingMore = true;
-    if (moreBtn) moreBtn.disabled = true;
-  }
-
-  const from = boardPage * BOARD_PAGE_SIZE;
-  const to   = from + BOARD_PAGE_SIZE - 1;
-
-  let query = supabaseClient.from("posts").select("*")
-    .order("is_pinned", { ascending: false })
-    .order("created_at",  { ascending: false })
-    .range(from, to);
-  if (boardCat !== "all") query = query.eq("category", boardCat);
-
-  const { data, error } = await query;
-
-  if (reset) listEl.innerHTML = "";
-  boardLoadingMore = false;
-
-  if (error) { listEl.innerHTML = ""; return; }
-
-  const batch = data || [];
-  if (batch.length < BOARD_PAGE_SIZE) boardHasMore = false;
-
-  if (batch.length === 0 && reset) {
-    emptyEl.classList.remove("board-empty-hidden");
-    if (moreBtn) moreBtn.style.display = "none";
-    return;
-  }
-
-  batch.forEach(post => {
-    const item = document.createElement("div");
-    item.className = `post-item${post.is_pinned ? " post-pinned" : ""}`;
-    item.innerHTML = `
-      <span class="post-cat-badge ${POST_CAT_CLASS[post.category] || "cat-etc"}">${POST_CAT_LABELS[post.category] || post.category}</span>
-      <span class="post-item-title">${post.is_pinned ? "📌 " : ""}${escapeHtml(post.title)}</span>
-      <span class="post-item-meta">${escapeHtml(post.author_name)}<br>${formatKoreanDate(post.created_at)}</span>
-    `;
-    item.addEventListener("click", () => openPostDetail(post));
-    listEl.appendChild(item);
-  });
-
-  boardPage++;
-
-  // "더 보기" 버튼 상태 업데이트
-  if (moreBtn) {
-    moreBtn.style.display = boardHasMore ? "block" : "none";
-    moreBtn.disabled = false;
-  }
-
-  if (typeof lucide !== "undefined") lucide.createIcons();
-}
-
-function openPostDetail(post) {
-  selectedPost = post;
-  const detailEl  = document.getElementById("post-detail");
-  const isAuthor  = currentUser && currentUser.id === post.author_id;
-  const isTeacher = currentProfile && currentProfile.role === "teacher";
-
-  detailEl.innerHTML = `
-    <div class="post-detail-header">
-      <div class="post-detail-cat-row">
-        <span class="post-cat-badge ${POST_CAT_CLASS[post.category] || "cat-etc"}">${POST_CAT_LABELS[post.category] || post.category}</span>
-        ${post.is_pinned ? `<span class="pinned-indicator">📌 공지</span>` : ""}
-      </div>
-      <h3 class="post-detail-title">${escapeHtml(post.title)}</h3>
-      <div class="post-detail-meta">
-        <span><i data-lucide="user"></i>${escapeHtml(post.author_name)} ${post.author_role === "teacher" ? "강사" : "학생"}</span>
-        <span><i data-lucide="calendar"></i>${formatKoreanDate(post.created_at)}</span>
-      </div>
-    </div>
-    <div class="post-detail-content">${escapeHtml(post.content)}</div>
-    <div class="post-detail-actions">
-      ${isTeacher ? `<button class="btn-pin-post" id="pin-post-btn">
-        ${post.is_pinned ? "📌 핀 해제" : "📌 공지 핀 고정"}
-      </button>` : ""}
-      ${isAuthor ? `<button class="btn-delete-post" id="delete-post-btn"><i data-lucide="trash-2"></i> 삭제</button>` : ""}
-    </div>
-
-    <!-- 댓글 섹션 -->
-    <div class="post-comments-section">
-      <h4 class="post-comments-title">💬 댓글</h4>
-      <div id="post-comment-list" class="post-comment-list"></div>
-      ${currentUser ? `
-        <form id="post-comment-form" class="post-comment-form">
-          <textarea id="post-comment-input" placeholder="댓글을 입력하세요..." rows="2" required></textarea>
-          <button type="submit" class="btn btn-primary btn-sm">등록</button>
-        </form>
-      ` : `<p class="post-comment-login">댓글을 작성하려면 로그인이 필요합니다.</p>`}
-    </div>
-  `;
-
-  if (isTeacher) {
-    document.getElementById("pin-post-btn").addEventListener("click", () => togglePin(post));
-  }
-  if (isAuthor) {
-    document.getElementById("delete-post-btn").addEventListener("click", () => deletePost(post.id));
-  }
-  if (currentUser) {
-    document.getElementById("post-comment-form").addEventListener("submit", (e) => submitPostComment(e, post.id));
-  }
-
-  if (typeof lucide !== "undefined") lucide.createIcons();
-  showBoardView("board-detail-view");
-  fetchPostComments(post.id);
-}
-
-async function togglePin(post) {
-  const newVal = !post.is_pinned;
-  const { error } = await supabaseClient.rpc("toggle_post_pin", { post_id: post.id, pin_value: newVal });
-  if (error) { alert("핀 설정 중 오류가 발생했습니다."); return; }
-  post.is_pinned = newVal;
-  openPostDetail(post);  // 새로고침
-  fetchPosts(true);
-}
-
-async function fetchPostComments(postId) {
-  const listEl = document.getElementById("post-comment-list");
-  if (!listEl) return;
-  listEl.innerHTML = `<p class="post-comment-loading">불러오는 중...</p>`;
+async function fetchGuestbook() {
+  const listEl  = document.getElementById("gb-list");
+  const emptyEl = document.getElementById("gb-empty");
+  listEl.innerHTML = `<li class="gb-loading">불러오는 중...</li>`;
+  emptyEl.classList.add("board-empty-hidden");
 
   const { data, error } = await supabaseClient
-    .from("post_comments").select("*")
-    .eq("post_id", postId)
-    .order("created_at", { ascending: true });
+    .from("posts").select("*")
+    .order("created_at", { ascending: false })
+    .limit(GB_LIMIT);
 
   listEl.innerHTML = "";
-  if (error || !data || data.length === 0) {
-    listEl.innerHTML = `<p class="post-comment-empty">첫 번째 댓글을 남겨보세요!</p>`;
+  if (error) {
+    emptyEl.textContent = "불러오기 실패";
+    emptyEl.classList.remove("board-empty-hidden");
     return;
   }
-
-  data.forEach(c => {
-    const div = document.createElement("div");
-    div.className = "post-comment-item";
-    const canDel = currentUser && currentUser.id === c.author_id;
-    div.innerHTML = `
-      <div class="post-comment-header">
-        <span class="post-comment-author">${escapeHtml(c.author_name)} <em>${c.author_role === "teacher" ? "강사" : "학생"}</em></span>
-        <span class="post-comment-date">${formatKoreanDate(c.created_at)}</span>
-        ${canDel ? `<button class="btn-del-pc" title="삭제"><i data-lucide="x"></i></button>` : ""}
-      </div>
-      <p class="post-comment-content">${escapeHtml(c.content)}</p>
-    `;
-    if (canDel) {
-      div.querySelector(".btn-del-pc").addEventListener("click", async () => {
-        if (!confirm("댓글을 삭제하시겠습니까?")) return;
-        await supabaseClient.from("post_comments").delete().eq("id", c.id);
-        fetchPostComments(postId);
-      });
-    }
-    listEl.appendChild(div);
-  });
+  if (!data || data.length === 0) {
+    emptyEl.textContent = "아직 글이 없어요. 첫 메모를 남겨보세요.";
+    emptyEl.classList.remove("board-empty-hidden");
+    return;
+  }
+  data.forEach(post => listEl.appendChild(gbRow(post)));
   if (typeof lucide !== "undefined") lucide.createIcons();
 }
 
-async function submitPostComment(e, postId) {
-  e.preventDefault();
-  const input = document.getElementById("post-comment-input");
-  const content = input.value.trim();
-  if (!content) return;
-
-  const btn = e.target.querySelector("button[type='submit']");
-  btn.disabled = true;
-
-  const { error } = await supabaseClient.from("post_comments").insert([{
-    post_id: postId,
-    author_id: currentUser.id,
-    author_name: currentProfile.username,
-    author_role: currentProfile.role || "student",
-    content
-  }]);
-
-  btn.disabled = false;
-  if (!error) { input.value = ""; fetchPostComments(postId); }
+// 본인 또는 관리자만 삭제 가능 / 수정은 본인만
+function gbCanDelete(post) {
+  return currentUser && (currentUser.id === post.author_id || (currentProfile && currentProfile.is_admin));
+}
+function gbCanEdit(post) {
+  return currentUser && currentUser.id === post.author_id;
 }
 
-async function deletePost(postId) {
-  if (!confirm("이 게시글을 삭제하시겠습니까?")) return;
-  const { error } = await supabaseClient.from("posts").delete().eq("id", postId);
-  if (error) { alert("삭제 중 오류가 발생했습니다."); return; }
-  showBoardView("board-list-view");
-  fetchPosts();
+function gbRow(post) {
+  const li = document.createElement("li");
+  li.className = "note-item";
+  li.dataset.id = post.id;
+  li._data = post;
+  gbView(li, post);
+  return li;
 }
 
-document.getElementById("post-form").addEventListener("submit", async (e) => {
+function gbView(li, post) {
+  li._data = post;
+  const canEdit = gbCanEdit(post);
+  const canDel  = gbCanDelete(post);
+  li.innerHTML =
+    `<div class="nactions">` +
+      (canEdit ? `<button class="nedit" title="수정">✏️</button>` : "") +
+      (canDel  ? `<button class="ndel" title="삭제">×</button>` : "") +
+    `</div>` +
+    `<h4>${escapeHtml(post.title)}</h4>` +
+    (post.content ? `<div class="nbody">${escapeHtml(post.content)}</div>` : "") +
+    `<div class="nmeta">${escapeHtml(post.author_name || "익명")} · ${formatKoreanDate(post.created_at)}</div>`;
+  if (canEdit) li.querySelector(".nedit").addEventListener("click", () => gbEdit(li, li._data));
+  if (canDel)  li.querySelector(".ndel").addEventListener("click", () => gbDelete(li, post.id));
+}
+
+function gbEdit(li, post) {
+  li.innerHTML =
+    `<input class="ne-title" maxlength="120" value="${escapeHtml(post.title)}">` +
+    `<textarea class="ne-body" maxlength="2000" rows="4">${escapeHtml(post.content || "")}</textarea>` +
+    `<div class="ne-btns"><button class="ne-cancel">취소</button><button class="ne-save">저장</button></div>`;
+  li.querySelector(".ne-cancel").addEventListener("click", () => gbView(li, li._data));
+  li.querySelector(".ne-save").addEventListener("click", async () => {
+    const title = li.querySelector(".ne-title").value.trim();
+    if (!title) { li.querySelector(".ne-title").focus(); return; }
+    const content = li.querySelector(".ne-body").value.trim();
+    const { data, error } = await supabaseClient
+      .from("posts").update({ title, content }).eq("id", post.id).select().single();
+    if (error) { alert("수정 실패: " + error.message); return; }
+    gbView(li, data);
+  });
+  li.querySelector(".ne-title").focus();
+}
+
+async function gbDelete(li, id) {
+  if (!confirm("이 글을 삭제할까요?")) return;
+  const { error } = await supabaseClient.from("posts").delete().eq("id", id);
+  if (error) { alert("삭제 실패: " + error.message); return; }
+  li.remove();
+  if (!document.getElementById("gb-list").children.length) {
+    const emptyEl = document.getElementById("gb-empty");
+    emptyEl.textContent = "아직 글이 없어요. 첫 메모를 남겨보세요.";
+    emptyEl.classList.remove("board-empty-hidden");
+  }
+}
+
+document.getElementById("gb-form").addEventListener("submit", async (e) => {
   e.preventDefault();
-  if (!currentUser) return;
+  if (!currentUser) { openModal(document.getElementById("auth-modal")); return; }
 
-  const category = document.getElementById("post-category").value;
-  const title    = document.getElementById("post-title").value.trim();
-  const content  = document.getElementById("post-content").value.trim();
-  const submitBtn = document.getElementById("submit-post-btn");
-  setButtonLoading(submitBtn, true);
+  const titleEl = document.getElementById("gb-title");
+  const title = titleEl.value.trim();
+  const body  = document.getElementById("gb-body").value.trim();
+  if (!title) { titleEl.focus(); return; }
 
-  const { error } = await supabaseClient.from("posts").insert([{
-    category, title, content,
+  const btn = document.getElementById("gb-submit");
+  setButtonLoading(btn, true);
+  const { data, error } = await supabaseClient.from("posts").insert([{
+    category: "etc", title, content: body,
     author_id: currentUser.id,
     author_name: currentProfile.username,
     author_role: currentProfile.role || "student"
-  }]);
+  }]).select().single();
+  setButtonLoading(btn, false);
 
-  setButtonLoading(submitBtn, false);
+  if (error) { alert("게시 실패: " + error.message); return; }
 
-  if (error) { alert("등록 중 오류가 발생했습니다: " + error.message); return; }
-
-  document.getElementById("post-form").reset();
-  showBoardView("board-list-view");
-  fetchPosts();
+  document.getElementById("gb-form").reset();
+  document.getElementById("gb-empty").classList.add("board-empty-hidden");
+  const listEl = document.getElementById("gb-list");
+  listEl.insertBefore(gbRow(data), listEl.firstChild);
+  titleEl.focus();
 });
 
-// 게시판 이벤트 연결
+// 방명록 열기
 document.getElementById("board-btn").addEventListener("click", () => {
-  // 글쓰기 버튼 표시 여부
-  const writeBtn = document.getElementById("write-post-btn");
-  writeBtn.classList.toggle("write-btn-hidden", !currentUser);
-  fetchPosts();
-  showBoardView("board-list-view");
+  gbUpdateAuth();
+  fetchGuestbook();
   openModal(document.getElementById("board-modal"));
-});
-
-document.getElementById("write-post-btn").addEventListener("click", () => {
-  document.getElementById("post-form").reset();
-  showBoardView("board-write-view");
-});
-
-document.getElementById("back-to-list").addEventListener("click", () => {
-  selectedPost = null;
-  showBoardView("board-list-view");
-});
-
-document.getElementById("back-from-write").addEventListener("click", () => {
-  showBoardView("board-list-view");
-});
-
-document.getElementById("cancel-post-btn").addEventListener("click", () => {
-  showBoardView("board-list-view");
-});
-
-document.getElementById("board-load-more").addEventListener("click", () => {
-  fetchPosts(false);
-});
-
-document.getElementById("board-cats").addEventListener("click", (e) => {
-  const btn = e.target.closest(".board-cat");
-  if (!btn) return;
-  document.querySelectorAll(".board-cat").forEach(b => b.classList.remove("active"));
-  btn.classList.add("active");
-  boardCat = btn.dataset.cat;
-  fetchPosts();
 });
 
 /* ==========================================================================
@@ -1663,15 +1513,13 @@ async function fetchMyPosts() {
     const item = document.createElement("div");
     item.className = "post-item";
     item.innerHTML = `
-      <span class="post-cat-badge ${POST_CAT_CLASS[post.category] || "cat-etc"}">${POST_CAT_LABELS[post.category] || post.category}</span>
       <span class="post-item-title">${escapeHtml(post.title)}</span>
       <span class="post-item-meta">${formatKoreanDate(post.created_at)}</span>
     `;
     item.addEventListener("click", () => {
       closeModal(document.getElementById("activity-modal"));
-      // 게시판 열고 해당 글 바로 표시
+      // 방명록 열기
       document.getElementById("board-btn").click();
-      setTimeout(() => openPostDetail(post), 400);
     });
     list.appendChild(item);
   });

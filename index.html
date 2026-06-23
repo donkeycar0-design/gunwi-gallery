@@ -188,90 +188,33 @@
   <!-- 링크 복사 토스트 -->
   <div id="copy-toast" class="copy-toast toast-hidden">🔗 링크가 클립보드에 복사되었습니다!</div>
 
-  <!-- 0. 게시판 Modal -->
+  <!-- 0. 방명록 Modal (포스트잇) -->
   <div id="board-modal" class="modal">
     <div class="modal-backdrop"></div>
-    <div class="modal-content board-modal-content">
+    <div class="modal-content guestbook-content">
       <button type="button" class="modal-close" title="닫기"><i data-lucide="x"></i></button>
 
-      <div class="board-header">
-        <div>
-          <h2 class="board-title"><i data-lucide="message-square"></i> 방명록</h2>
-          <p class="board-subtitle">몰입 메이커스 선생님·학생 소통 공간</p>
-        </div>
-        <button type="button" id="write-post-btn" class="btn btn-primary write-btn-hidden">
-          <i data-lucide="pencil"></i> 글쓰기
-        </button>
+      <div class="gb-header">
+        <h2 class="board-title"><i data-lucide="pen-line"></i> 방명록</h2>
+        <p class="board-subtitle">선생님·학생 누구나 자유롭게 메모를 남겨보세요</p>
       </div>
 
-      <!-- 카테고리 탭 -->
-      <div class="board-cats" id="board-cats">
-        <button type="button" class="board-cat active" data-cat="all">전체</button>
-        <button type="button" class="board-cat" data-cat="notice">📢 전달사항</button>
-        <button type="button" class="board-cat" data-cat="suggest">💡 건의사항</button>
-        <button type="button" class="board-cat" data-cat="request">🛠️ 제작요청</button>
-        <button type="button" class="board-cat" data-cat="praise">👏 칭찬해요</button>
-        <button type="button" class="board-cat" data-cat="complaint">😤 불편사항</button>
-        <button type="button" class="board-cat" data-cat="etc">💬 기타</button>
-      </div>
-
-      <!-- 뷰 1: 목록 -->
-      <div id="board-list-view" class="board-view">
-        <div id="posts-list" class="posts-list"></div>
-        <p id="board-empty" class="board-empty board-empty-hidden">등록된 게시글이 없습니다.</p>
-        <div class="board-load-more-wrap">
-          <button type="button" id="board-load-more" class="btn-load-more" style="display:none;">
-            게시글 더 보기
+      <!-- 포스트잇 작성 -->
+      <form id="gb-form" class="gb-form">
+        <input id="gb-title" type="text" placeholder="제목" maxlength="120" autocomplete="off">
+        <textarea id="gb-body" placeholder="내용 · 메모 · 아이디어 · 실험 기록…" maxlength="2000" rows="3"></textarea>
+        <div class="gb-form-foot">
+          <span id="gb-login-hint" class="gb-login-hint">메모를 남기려면 로그인이 필요합니다.</span>
+          <button type="submit" id="gb-submit" class="btn btn-primary gb-submit">
+            <span class="btn-text">＋ 게시</span>
+            <span class="btn-spinner"></span>
           </button>
         </div>
-      </div>
+      </form>
 
-      <!-- 뷰 2: 상세 -->
-      <div id="board-detail-view" class="board-view board-view-hidden">
-        <button type="button" id="back-to-list" class="btn-back">
-          <i data-lucide="arrow-left"></i> 목록으로
-        </button>
-        <div id="post-detail"></div>
-      </div>
-
-      <!-- 뷰 3: 글쓰기 -->
-      <div id="board-write-view" class="board-view board-view-hidden">
-        <button type="button" id="back-from-write" class="btn-back">
-          <i data-lucide="arrow-left"></i> 취소
-        </button>
-        <form id="post-form" class="post-form">
-          <div class="form-group">
-            <label for="post-category">카테고리 <span class="required">*</span></label>
-            <div class="select-wrapper">
-              <select id="post-category" required title="카테고리 선택">
-                <option value="notice">📢 전달사항</option>
-                <option value="suggest">💡 건의사항</option>
-                <option value="request">🛠️ 제작요청</option>
-                <option value="praise">👏 칭찬해요</option>
-                <option value="complaint">😤 불편사항</option>
-                <option value="etc">💬 기타</option>
-              </select>
-              <i data-lucide="chevron-down"></i>
-            </div>
-          </div>
-          <div class="form-group">
-            <label for="post-title">제목 <span class="required">*</span></label>
-            <input type="text" id="post-title" required placeholder="제목을 입력하세요">
-          </div>
-          <div class="form-group">
-            <label for="post-content">내용 <span class="required">*</span></label>
-            <textarea id="post-content" required rows="8" placeholder="내용을 입력하세요&#10;(줄바꿈: Enter 키 사용)"></textarea>
-          </div>
-          <div class="form-actions">
-            <button type="button" id="cancel-post-btn" class="btn btn-secondary">취소</button>
-            <button type="submit" id="submit-post-btn" class="btn btn-primary">
-              <span class="btn-text">등록하기</span>
-              <span class="btn-spinner"></span>
-            </button>
-          </div>
-        </form>
-      </div>
-
+      <!-- 작성된 포스트잇 목록 -->
+      <ul id="gb-list" class="note-list"></ul>
+      <p id="gb-empty" class="gb-empty board-empty-hidden">아직 글이 없어요. 첫 메모를 남겨보세요.</p>
     </div>
   </div>
 
