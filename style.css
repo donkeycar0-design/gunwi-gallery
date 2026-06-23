@@ -1769,12 +1769,15 @@ select option { background: #fff; color: var(--text-primary); }
    📝 방명록 (포스트잇 노트)
    ========================================================================== */
 /* 인라인 방명록 화면 (모달 아님) */
-.guestbook-view { max-width: 1200px; margin: 0 auto; padding: 8px 24px 40px; }
+.guestbook-view {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 8px 24px 40px 58px;
+}
 .gb-section-hidden { display: none; }
 .guestbook-panel {
-  max-width: 1080px;
-  margin: 0 auto;
-  padding: 24px 28px 32px;
+  width: 100%;
+  padding: 24px 0 32px;
   background: transparent;   /* 페이지 배경과 동일 — 경계 없음 */
   box-shadow: none;
 }
@@ -1820,7 +1823,7 @@ select option { background: #fff; color: var(--text-primary); }
 
 /* 포스트잇 목록 */
 .note-list {
-  list-style: none; margin: 22px 0 0; padding: 12px 0 0;
+  list-style: none; margin: 22px 0 0; padding: 12px 18px 0;
   display: grid; gap: 24px 18px;
   grid-template-columns: repeat(auto-fill, minmax(228px, 1fr));
 }
@@ -1875,7 +1878,7 @@ select option { background: #fff; color: var(--text-primary); }
 .gb-loading { list-style: none; text-align: center; color: rgba(0,0,0,0.45); padding: 30px 0; grid-column: 1 / -1; }
 
 @media (max-width: 768px) {
-  .guestbook-content { padding: 20px 16px 24px; }
+  .guestbook-view { padding-left: 30px; }
   .note-list { grid-template-columns: 1fr 1fr; gap: 20px 12px; }
   .note-list li.note-item { transform: rotate(0) !important; }
 }
