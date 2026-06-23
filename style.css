@@ -1588,6 +1588,14 @@ select option { background: #fff; color: var(--text-primary); }
   padding-top: 20px;
   padding-bottom: 8px;
 }
+/* 로고 + 게시판 버튼 묶음 (좌측) */
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.header-left .btn-board { align-self: center; }
 .logo {
   position: relative;
   background: #fdf3a8;

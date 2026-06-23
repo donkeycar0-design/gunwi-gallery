@@ -26,6 +26,7 @@
   <!-- Header Section -->
   <header class="app-header">
     <div class="header-container">
+      <div class="header-left">
       <a href="/" class="logo">
         <div class="logo-mark">
           <i data-lucide="palette" class="logo-mark-icon"></i>
@@ -38,6 +39,10 @@
           <span class="logo-tagline">선생님 학생이 함께만드는 창의적인 작품 갤러리</span>
         </div>
       </a>
+        <button type="button" id="board-btn" class="btn btn-board">
+          <i data-lucide="message-square"></i> 게시판
+        </button>
+      </div>
       <nav class="nav-menu">
         <button id="add-app-btn" type="button" class="btn btn-primary btn-hidden">
           <i data-lucide="plus"></i> <span>작품 전시하기</span>
@@ -82,12 +87,7 @@
             <button type="button" class="role-filter-btn" data-role="teacher">🎓 강사</button>
             <button type="button" class="role-filter-btn" data-role="student">📚 학생</button>
           </div>
-        </div>
-
-        <div class="filters-right">
-          <button type="button" id="board-btn" class="btn btn-board">
-            <i data-lucide="message-square"></i> 게시판
-          </button>
+          <!-- 정렬 -->
           <div class="sort-wrapper">
             <select id="sort-select" class="sort-select" title="정렬 기준 선택">
               <option value="recent">최근 등록순</option>
