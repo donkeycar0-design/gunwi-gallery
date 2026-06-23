@@ -1837,10 +1837,10 @@ select option { background: #fff; color: var(--text-primary); }
   background: rgba(255,255,255,.55); border: 1px solid rgba(0,0,0,0.04);
   box-shadow: 0 1px 4px rgba(0,0,0,0.1);
 }
-.note-list li.note-item:nth-of-type(4n+1){ background:#fff3a6; transform:rotate(-1.4deg); }
-.note-list li.note-item:nth-of-type(4n+2){ background:#d4eecb; transform:rotate(1.2deg); }
-.note-list li.note-item:nth-of-type(4n+3){ background:#ffd7c2; transform:rotate(-0.8deg); }
-.note-list li.note-item:nth-of-type(4n+4){ background:#cfe6ff; transform:rotate(1.6deg); }
+.note-list li.note-item:nth-of-type(4n+1){ background:#fff3a6; }
+.note-list li.note-item:nth-of-type(4n+2){ background:#d4eecb; }
+.note-list li.note-item:nth-of-type(4n+3){ background:#ffd7c2; }
+.note-list li.note-item:nth-of-type(4n+4){ background:#cfe6ff; }
 .note-list li.note-item:hover {
   transform: rotate(0) translateY(-4px) scale(1.02); z-index: 2;
   box-shadow: 5px 10px 24px rgba(0,0,0,0.22);
