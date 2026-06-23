@@ -1416,8 +1416,12 @@ function hideGuestbook() {
   document.querySelector(".control-section").style.display = "";
   document.querySelector(".showcase-section").style.display = "";
 }
-document.getElementById("board-btn").addEventListener("click", showGuestbook);
-document.getElementById("gb-back").addEventListener("click", hideGuestbook);
+// 방명록 버튼 = 토글 (방명록 ↔ 갤러리)
+document.getElementById("board-btn").addEventListener("click", () => {
+  const gbVisible = document.getElementById("guestbook-view").style.display === "block";
+  if (gbVisible) hideGuestbook();
+  else showGuestbook();
+});
 
 /* ==========================================================================
    공유 링크
@@ -1529,8 +1533,7 @@ async function fetchMyPosts() {
     `;
     item.addEventListener("click", () => {
       closeModal(document.getElementById("activity-modal"));
-      // 방명록 열기
-      document.getElementById("board-btn").click();
+      showGuestbook();
     });
     list.appendChild(item);
   });
