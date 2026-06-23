@@ -40,15 +40,37 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-  background-color: var(--bg-base);
+  background-color: #e9e2d0;
   background-image:
-    radial-gradient(ellipse 80% 50% at 20% -10%, rgba(99,102,241,0.07) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 40% at 80% 110%, rgba(139,92,246,0.05) 0%, transparent 60%);
+    /* 종이 결 미세 텍스처 */
+    repeating-linear-gradient(0deg, rgba(0,0,0,0.012) 0px, rgba(0,0,0,0.012) 1px, transparent 1px, transparent 28px),
+    radial-gradient(ellipse 80% 50% at 20% -10%, rgba(255,255,255,0.5) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 110%, rgba(0,0,0,0.03) 0%, transparent 60%);
   color: var(--text-primary);
   font-family: var(--font-body);
   line-height: 1.6;
   overflow-x: hidden;
   min-height: 100vh;
+}
+
+/* 왼쪽 스프링 노트 바인딩 */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; bottom: 0; left: 0;
+  width: 42px;
+  z-index: 60;
+  background-color: #ded6c1;
+  background-image: repeating-linear-gradient(
+    -24deg,
+    #9b9ba3 0px, #ececf2 3px, #7f7f88 7px,
+    transparent 7px, transparent 13px,
+    rgba(0,0,0,0.18) 13px, rgba(0,0,0,0.18) 14px,
+    transparent 14px, transparent 27px
+  );
+  border-right: 1px solid rgba(0,0,0,0.12);
+  box-shadow: inset -7px 0 12px -7px rgba(0,0,0,0.35), 2px 0 5px rgba(0,0,0,0.08);
+  pointer-events: none;
 }
 
 /* ==========================================================================
@@ -65,9 +87,7 @@ body {
   z-index: -1;
   pointer-events: none;
 }
-.orb-1 { top: -10%; left: -10%; background: radial-gradient(circle, #818cf8 0%, transparent 70%); }
-.orb-2 { bottom: -15%; right: -10%; background: radial-gradient(circle, #c084fc 0%, transparent 70%); }
-.orb-3 { display: none; }
+.orb-1, .orb-2, .orb-3 { display: none; }
 
 /* ==========================================================================
    Buttons
@@ -1540,4 +1560,191 @@ select option { background: #fff; color: var(--text-primary); }
   .detail-actions { flex-direction: column; gap: 8px; }
   .detail-actions .btn { width: 100%; }
   .detail-meta { flex-wrap: wrap; gap: 8px; }
+}
+
+/* ==========================================================================
+   📒 노트/포스트잇 테마 (Notebook & Post-it Theme)
+   메인 갤러리 화면을 종이 노트 + 색깔 포스트잇 느낌으로 변환
+   ========================================================================== */
+
+/* 본문 컨텐츠가 왼쪽 바인딩에 가리지 않도록 여백 */
+.app-header .header-container,
+.control-section,
+.showcase-section,
+.app-footer .footer-container {
+  padding-left: 58px;
+}
+.showcase-section { max-width: 1200px; margin: 0 auto; padding-right: 24px; }
+
+/* ---- 헤더: 종이 위 테이프 붙은 로고 ---- */
+.app-header {
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border-bottom: none;
+  box-shadow: none;
+}
+.app-header .header-container {
+  padding-top: 20px;
+  padding-bottom: 8px;
+}
+.logo {
+  position: relative;
+  background: #fdf3a8;
+  padding: 12px 20px 12px 14px;
+  border-radius: 6px;
+  box-shadow: 2px 4px 10px rgba(0,0,0,0.14);
+  transform: rotate(-1.2deg);
+  transition: transform 0.25s ease;
+}
+.logo:hover { transform: rotate(0deg) scale(1.01); }
+/* 로고 위 테이프 */
+.logo::before {
+  content: '';
+  position: absolute;
+  top: -10px; left: 50%;
+  width: 64px; height: 22px;
+  transform: translateX(-50%) rotate(-3deg);
+  background: rgba(255,255,255,0.55);
+  border: 1px solid rgba(0,0,0,0.05);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.logo-mark {
+  background: #ef5b4c;
+  border-radius: 12px;
+  box-shadow: 0 3px 8px rgba(239,91,76,0.35);
+}
+.logo-mark-icon { transform: rotate(0deg); }
+.logo-tagline { color: #8a7b3e; }
+
+/* 헤더 네비 버튼 — 작은 종이 카드 느낌 */
+.nav-menu .btn-secondary,
+.btn-board,
+.footer-qr-btn {
+  background: #fffdf5;
+  border: 1px solid rgba(0,0,0,0.1);
+  box-shadow: 1px 2px 5px rgba(0,0,0,0.1);
+  border-radius: 8px;
+}
+.nav-menu .btn-primary {
+  border-radius: 8px;
+  box-shadow: 1px 3px 8px rgba(99,102,241,0.35);
+}
+
+/* ---- 검색바: 종이 위 입력 카드 ---- */
+#search-input {
+  background: #fffdf5;
+  border: 1px solid rgba(0,0,0,0.12);
+  border-radius: 12px;
+  box-shadow: 1px 3px 8px rgba(0,0,0,0.1);
+}
+
+/* ---- 필터 탭 / 역할 / 정렬: 종이 톤 ---- */
+.category-tabs,
+.role-filter-bar,
+.sort-select {
+  background: #fffdf5;
+  border: 1px solid rgba(0,0,0,0.1);
+  box-shadow: 1px 2px 6px rgba(0,0,0,0.08);
+}
+
+/* ==========================================================================
+   포스트잇 카드
+   ========================================================================== */
+.apps-grid {
+  gap: 30px 26px;
+  padding-top: 8px;
+}
+
+.app-card {
+  background: #fdf3a8;             /* 기본 노랑 (nth-child로 색 순환) */
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 4px;
+  box-shadow: 3px 5px 14px rgba(0,0,0,0.16);
+  transform: rotate(-1deg);
+  overflow: visible;
+  transition: transform 0.28s cubic-bezier(0.16,1,0.3,1), box-shadow 0.28s ease;
+}
+/* 카드 위 테이프 */
+.app-card::before {
+  content: '';
+  position: absolute;
+  top: -11px; left: 50%;
+  width: 88px; height: 26px;
+  transform: translateX(-50%) rotate(-4deg);
+  background: rgba(255,255,255,0.5);
+  border: 1px solid rgba(0,0,0,0.04);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  z-index: 3;
+}
+/* 기존 상단 하이라이트 선 제거 */
+.app-card::after { display: none; }
+.app-card:hover {
+  transform: rotate(0deg) translateY(-6px) scale(1.02);
+  box-shadow: 5px 10px 26px rgba(0,0,0,0.24);
+  border-color: rgba(0,0,0,0.1);
+}
+
+/* 색 순환 (노랑 / 초록 / 분홍 / 파랑) + 기울기 교차 */
+.apps-grid .app-card:nth-child(4n+1) { background: #fdf3a8; transform: rotate(-1.1deg); }
+.apps-grid .app-card:nth-child(4n+2) { background: #cdebd6; transform: rotate(0.9deg); }
+.apps-grid .app-card:nth-child(4n+3) { background: #fad7cb; transform: rotate(-0.7deg); }
+.apps-grid .app-card:nth-child(4n+4) { background: #d2e6f8; transform: rotate(1.2deg); }
+.apps-grid .app-card:nth-child(4n+1):hover,
+.apps-grid .app-card:nth-child(4n+2):hover,
+.apps-grid .app-card:nth-child(4n+3):hover,
+.apps-grid .app-card:nth-child(4n+4):hover {
+  transform: rotate(0deg) translateY(-6px) scale(1.02);
+}
+
+/* 표지 이미지 — 포스트잇 위에 붙은 사진 프레임 */
+.card-image-wrapper {
+  margin: 14px 14px 0;
+  width: auto;
+  border-radius: 3px;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+  aspect-ratio: 16 / 10;
+}
+.card-placeholder { border-radius: 3px; background: rgba(255,255,255,0.45) !important; }
+.card-placeholder-emoji { font-size: 2.6rem; }
+
+/* 카테고리 배지 (상태 배지 자리) */
+.card-badge {
+  top: 10px; left: 10px;
+  background: rgba(255,255,255,0.85);
+  border: 1px solid rgba(0,0,0,0.06);
+  color: #444;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+/* 본문 텍스트 — 파스텔 위 가독성 ↑ */
+.card-content { padding: 14px 18px 16px; }
+.card-title { color: #2b2b2b; }
+.card-desc { color: rgba(0,0,0,0.55); }
+.card-footer {
+  border-top: 1px dashed rgba(0,0,0,0.18);
+  padding-top: 10px;
+}
+.card-author { color: rgba(0,0,0,0.6); }
+.card-stats { color: rgba(0,0,0,0.55); }
+
+/* 빈 화면 / 로딩 — 종이톤 */
+.loading-state, .empty-state { color: rgba(0,0,0,0.45); }
+
+/* ---- 푸터: 종이 톤 ---- */
+.app-footer {
+  background: rgba(255,255,255,0.35);
+  border-top: 1px solid rgba(0,0,0,0.1);
+}
+
+/* 모바일 — 바인딩 얇게, 여백 축소 */
+@media (max-width: 768px) {
+  body::before { width: 22px; }
+  .app-header .header-container,
+  .control-section,
+  .showcase-section,
+  .app-footer .footer-container { padding-left: 30px; }
+  .app-card, .apps-grid .app-card { transform: rotate(0deg); }
 }
